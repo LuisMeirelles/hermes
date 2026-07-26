@@ -1,4 +1,9 @@
 {
+    "agents": [
+        "junie",
+        "claude_code",
+        "antigravity"
+    ],
     "cloud": false,
     "guidelines": true,
     "mcp": true,
@@ -6,6 +11,7 @@
     "sail": false,
     "skills": [
         "laravel-best-practices",
+        "socialite-development",
         "wayfinder-development",
         "pest-testing",
         "inertia-react-development",
