@@ -70,15 +70,32 @@ Teste específico).
   comando (`composer`, `artisan`, `npm`) deve rodar via
   `docker compose exec <serviço> ...` (containers já de pé) ou
   `docker compose run --rm <serviço> ...` (container avulso).
+- `now()` neste projeto retorna `Carbon\CarbonImmutable`, não `Carbon\Carbon`
+  mutável. Encadear `$now->subX(...)->timestamp` seguido de
+  `$now->addY(...)->timestamp` NÃO acumula — cada chamada parte do mesmo
+  instante original, já que nenhuma reatribui `$now`. Atenção redobrada em
+  qualquer cálculo de janela de tempo (ex: `exp`/`iat` de JWT).
+- Rotas tipo webhook (sem formulário/CSRF token, chamadas servidor-a-servidor)
+  usam `$middleware->validateCsrfTokens(except: [...])` em `bootstrap/app.php`
+  em vez de um grupo `api:` novo — o app não tem `routes/api.php` registrado.
+- Eventos de ciclo de vida da instalação do GitHub App (`installation`,
+  `installation_repositories`) são entregues automaticamente pra qualquer
+  webhook ativo do App — não aparecem em "Subscribe to events" e não precisam
+  (nem podem) ser assinados explicitamente.
 
-## Roadmap de construção (ainda NÃO implementado — referência para quando essa
+## Roadmap de construção
 
-## etapa começar)
-
-1. Auth via GitHub OAuth + conexão do GitHub App (JWT/installation token,
-   webhook endpoint).
+1. ✅ **Feito.** Auth via GitHub OAuth + conexão do GitHub App (JWT/installation
+   token, webhook endpoint). Login via Socialite
+   (`app/Http/Controllers/Auth/GithubController.php`); JWT + installation
+   token via `app/Services/GithubApp.php`; conexão da instalação via Setup URL
+   em Settings > GitHub (`GithubInstallationController`); webhook com
+   verificação de assinatura (`VerifyGithubWebhookSignature` middleware) e
+   processamento assíncrono (`ProcessGithubWebhook` job, tabela
+   `github_installations`). Verificado contra a API e webhook reais do GitHub,
+   não só mocks.
 2. Biblioteca de Casos de Teste + CRUD de Teste/Cenário + fluxo de status +
-   cálculo agregado.
+   cálculo agregado. **(próximo passo)**
 3. Timer + Evidências + Severidade/Impacto/Tags.
 4. Gate de Projects v2 (leitura) + comentários automáticos (escrita).
 5. Criação de bug issues (seleção manual / todos os falhados).
@@ -95,7 +112,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 
 - php - 8.5
 - inertiajs/inertia-laravel (INERTIA_LARAVEL) - v3
-- laravel/fortify (FORTIFY) - v1
+- laravel/socialite (SOCIALITE) - v5
 - laravel/framework (LARAVEL) - v13
 - laravel/prompts (PROMPTS) - v0
 - laravel/wayfinder (WAYFINDER) - v0
