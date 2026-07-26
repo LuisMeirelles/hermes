@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Settings\GithubInstallationController;
 use App\Http\Controllers\Settings\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -11,4 +12,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('settings/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
+
+    Route::get('settings/github', [GithubInstallationController::class, 'edit'])->name('settings.github.edit');
+    Route::get('settings/github/callback', [GithubInstallationController::class, 'callback'])->name('settings.github.callback');
 });

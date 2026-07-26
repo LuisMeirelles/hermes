@@ -38,11 +38,11 @@ return [
     'github' => [
         'client_id' => env('GITHUB_CLIENT_ID'),
         'client_secret' => env('GITHUB_CLIENT_SECRET'),
-        'redirect' => env('GITHUB_REDIRECT_URI', rtrim(env('APP_URL'), '/').'/auth/github/callback'),
+        'redirect' => env('GITHUB_REDIRECT_URI', rtrim((string) env('APP_URL'), '/').'/auth/github/callback'),
 
-        // GitHub App identity, unused until the installation/webhook step.
         'app_id' => env('GITHUB_APP_ID'),
-        'private_key_path' => env('GITHUB_APP_PRIVATE_KEY_PATH'),
+        'app_slug' => env('GITHUB_APP_SLUG'),
+        'private_key_path' => env('GITHUB_APP_PRIVATE_KEY_PATH', storage_path('app/private/github-app-private-key.pem')),
         'webhook_secret' => env('GITHUB_APP_WEBHOOK_SECRET'),
     ],
 
