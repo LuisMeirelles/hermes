@@ -20,4 +20,14 @@ enum TesteStatus: string
             self::Parcial => 'Parcial',
         };
     }
+
+    /**
+     * Statuses grouped as "pendente" for dashboard/reporting purposes.
+     *
+     * @return array<int, self>
+     */
+    public static function pendentes(): array
+    {
+        return [self::NaoIniciado, self::EmAndamento];
+    }
 }

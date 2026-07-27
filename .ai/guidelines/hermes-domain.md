@@ -79,6 +79,11 @@ Teste específico).
   `installation_repositories`) são entregues automaticamente pra qualquer
   webhook ativo do App — não aparecem em "Subscribe to events" e não precisam
   (nem podem) ser assinados explicitamente.
+- Agrupamentos de UI que não existem como status real (ex: "Pendente" no
+  dashboard e no filtro de `/testes` = `nao_iniciado` + `em_andamento`) ficam
+  como método estático no enum (`TesteStatus::pendentes()`) ou mapa local na
+  página — nunca como case sintético do enum, pra não quebrar `cases()`/
+  `from()`/matches exaustivos como o `Record<Status, ...>` do `StatusBadge`.
 
 ## Roadmap de construção
 
@@ -91,8 +96,25 @@ Teste específico).
    processamento assíncrono (`ProcessGithubWebhook` job, tabela
    `github_installations`). Verificado contra a API e webhook reais do GitHub,
    não só mocks.
-2. Biblioteca de Casos de Teste + CRUD de Teste/Cenário + fluxo de status +
-   cálculo agregado. **(próximo passo)**
-3. Timer + Evidências + Severidade/Impacto/Tags.
-4. Gate de Projects v2 (leitura) + comentários automáticos (escrita).
-5. Criação de bug issues (seleção manual / todos os falhados).
+2. ✅ **Feito.** Biblioteca de Casos de Teste + CRUD de Teste/Cenário + fluxo
+   de status + cálculo agregado. CRUD de Casos de Teste em Gherkin
+   (`CasoDeTesteController`, editor drag-and-drop `GherkinStepEditor`); Testes
+   vinculados a issues reais do GitHub, um repo+issue pode ter vários ciclos
+   de Teste (sem unique constraint) (`TesteController`); Cenários instanciados
+   de Casos de Teste com snapshot de passos e máquina de estados de status
+   (`CenarioController`, `CenarioStatus::allowedNextStatuses()`); cálculo
+   agregado isolado em serviço puro e testável
+   (`TesteAggregateCalculator`/`TesteAggregateResult`/`TesteAggregateRecalculator`).
+3. ✅ **Feito.** Dashboard com visão geral dos Testes: cards de contagem por
+   status agregado (Sucesso/Falha/Parcial/Pendente, cada um linkando para a
+   listagem de Testes já filtrada via `?status=`), distribuição percentual
+   entre eles, cenários bloqueantes em aberto (severidade Bloqueante/Crítica
+   ainda não `passou`, incluindo `bloqueado` — que já conta como falha
+   efetiva pela regra de cálculo agregado), testes recentes e totais da
+   biblioteca de Casos de Teste (total + não utilizados em nenhum Cenário)
+   (`DashboardController`). Verificado com testes Pest e manualmente no
+   browser, com dados de teste criados pela própria UI (não apenas
+   factories/tinker).
+4. Timer + Evidências + Impacto/Tags. **(próximo passo)**
+5. Gate de Projects v2 (leitura) + comentários automáticos (escrita).
+6. Criação de bug issues (seleção manual / todos os falhados).

@@ -1,7 +1,8 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import Heading from '@/components/heading';
 import StatusBadge from '@/components/status-badge';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -14,7 +15,20 @@ import {
 import { create, index, show } from '@/routes/testes';
 import type { Teste } from '@/types';
 
-export default function TestesIndex({ testes }: { testes: Teste[] }) {
+const STATUS_FILTER_LABELS: Record<string, string> = {
+    passou: 'Sucesso',
+    falhou: 'Falha',
+    parcial: 'Parcial',
+    pendente: 'Pendente',
+};
+
+export default function TestesIndex({
+    testes,
+    statusFilter,
+}: {
+    testes: Teste[];
+    statusFilter: string | null;
+}) {
     return (
         <>
             <Head title="Testes" />
@@ -31,6 +45,23 @@ export default function TestesIndex({ testes }: { testes: Teste[] }) {
                         </Link>
                     </Button>
                 </div>
+
+                {statusFilter && (
+                    <div className="flex items-center gap-2 text-sm">
+                        <span className="text-muted-foreground">
+                            Filtrado por:
+                        </span>
+                        <Badge variant="outline">
+                            {STATUS_FILTER_LABELS[statusFilter] ?? statusFilter}
+                        </Badge>
+                        <Link
+                            href={index()}
+                            className="text-muted-foreground hover:text-foreground"
+                        >
+                            <X className="size-3.5" />
+                        </Link>
+                    </div>
+                )}
 
                 <Table>
                     <TableHeader>

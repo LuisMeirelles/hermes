@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TesteStatus;
 use App\Http\Requests\Teste\StoreTesteRequest;
 use App\Models\CasoDeTeste;
 use App\Models\Teste;
@@ -10,18 +11,36 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class TesteController extends Controller
 {
     /**
-     * Show the list of Testes.
+     * Show the list of Testes, optionally filtered by status
+     * (an exact TesteStatus value, or the virtual group "pendente").
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $validated = $request->validate([
+            'status' => ['sometimes', 'string', Rule::in([
+                ...array_column(TesteStatus::cases(), 'value'),
+                'pendente',
+            ])],
+        ]);
+
+        $status = $validated['status'] ?? null;
+
+        $testes = Teste::query()
+            ->when($status === 'pendente', fn ($query) => $query->whereIn('status', TesteStatus::pendentes()))
+            ->when($status !== null && $status !== 'pendente', fn ($query) => $query->where('status', TesteStatus::from($status)))
+            ->latest('id')
+            ->get();
+
         return Inertia::render('testes/index', [
-            'testes' => Teste::query()->latest('id')->get(),
+            'testes' => $testes,
+            'statusFilter' => $status,
         ]);
     }
 
