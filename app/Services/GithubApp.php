@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\GithubInstallation;
 use Firebase\JWT\JWT;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Cache;
@@ -39,6 +40,34 @@ class GithubApp
                 ->throw()
                 ->json('token'),
         );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getIssue(string $repoName, int $issueNumber): array
+    {
+        $installation = GithubInstallation::query()->active()->firstOrFail();
+
+        return $this->client()
+            ->withToken($this->installationToken($installation->installation_id))
+            ->get("/repos/{$installation->account_login}/{$repoName}/issues/{$issueNumber}")
+            ->throw()
+            ->json();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function listRepositories(): array
+    {
+        $installation = GithubInstallation::query()->active()->firstOrFail();
+
+        return $this->client()
+            ->withToken($this->installationToken($installation->installation_id))
+            ->get('/installation/repositories', ['per_page' => 100])
+            ->throw()
+            ->json('repositories');
     }
 
     private function privateKey(): string

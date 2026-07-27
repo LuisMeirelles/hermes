@@ -18,10 +18,7 @@ class GithubInstallationController extends Controller
     public function edit(): Response
     {
         return Inertia::render('settings/github', [
-            'installation' => GithubInstallation::query()
-                ->whereNull('uninstalled_at')
-                ->latest('id')
-                ->first(),
+            'installation' => GithubInstallation::query()->active()->first(),
             'appSlug' => config('services.github.app_slug'),
         ]);
     }
