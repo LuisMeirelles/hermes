@@ -19,7 +19,7 @@ export default function TestesIndex({ testes }: { testes: Teste[] }) {
         <>
             <Head title="Testes" />
 
-            <div className="space-y-6">
+            <div className="space-y-6 p-4">
                 <div className="flex items-center justify-between">
                     <Heading
                         title="Testes"

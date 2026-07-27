@@ -66,7 +66,7 @@ export default function CasosDeTesteEdit({
         <>
             <Head title={casoDeTeste.titulo} />
 
-            <div className="space-y-6">
+            <div className="space-y-6 p-4">
                 <Heading
                     title="Editar Caso de Teste"
                     description="Atualize o título e os passos em Gherkin"

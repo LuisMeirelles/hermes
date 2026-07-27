@@ -110,7 +110,7 @@ export default function TestesShow({
                 }
             />
 
-            <div className="space-y-6">
+            <div className="space-y-6 p-4">
                 <div className="space-y-2">
                     <Heading
                         title={teste.titulo ?? issue.title}

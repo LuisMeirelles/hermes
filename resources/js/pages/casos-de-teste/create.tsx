@@ -47,7 +47,7 @@ export default function CasosDeTesteCreate() {
         <>
             <Head title="Novo Caso de Teste" />
 
-            <div className="space-y-6">
+            <div className="space-y-6 p-4">
                 <Heading
                     title="Novo Caso de Teste"
                     description="Descreva o caso de teste em Gherkin"
