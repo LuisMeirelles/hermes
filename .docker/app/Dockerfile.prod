@@ -1,0 +1,57 @@
+FROM php:8.5-cli AS vendor
+
+RUN apt-get update && apt-get install -y \
+    unzip \
+    libzip-dev \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN docker-php-ext-install pgsql pdo_pgsql zip pcntl
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+WORKDIR /app
+COPY . .
+
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-progress \
+    --optimize-autoloader
+
+
+FROM vendor AS frontend
+
+RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+    && apt-get install -y nodejs
+
+RUN npm ci && npm run build
+
+
+FROM dunglas/frankenphp:php8.5 AS production
+
+RUN apt-get update && apt-get install -y \
+    libzip-dev \
+    libpq-dev \
+    && docker-php-ext-install pgsql pdo_pgsql zip pcntl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY . .
+COPY --from=vendor /app/vendor ./vendor
+COPY --from=vendor /app/bootstrap/cache ./bootstrap/cache
+COPY --from=frontend /app/public/build ./public/build
+
+RUN chown -R www-data:www-data storage bootstrap/cache /data /config
+
+ENV SERVER_NAME=:80
+EXPOSE 80
+
+COPY .docker/app/entrypoint.prod.sh /entrypoint.prod.sh
+RUN chmod +x /entrypoint.prod.sh
+
+USER www-data
+
+ENTRYPOINT ["/entrypoint.prod.sh"]
+CMD ["frankenphp", "php-server", "-r", "public/", "--listen", ":80"]
