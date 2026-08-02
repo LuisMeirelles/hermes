@@ -18,7 +18,7 @@ final class TesteAggregateRecalculator
             ])
             ->all();
 
-        $result = $this->calculator->calculate($pairs);
+        $result = $this->calculator->calculate($pairs, $teste->status);
 
         $teste->forceFill([
             'status' => $result->status,

@@ -12,7 +12,7 @@ final class TesteAggregateCalculator
     /**
      * @param  iterable<array{status: CenarioStatus, severidade: Severidade}>  $cenarios
      */
-    public function calculate(iterable $cenarios): TesteAggregateResult
+    public function calculate(iterable $cenarios, TesteStatus $statusAnterior = TesteStatus::NaoIniciado): TesteAggregateResult
     {
         $efetivos = Collection::make($cenarios)->reject(
             fn (array $cenario): bool => $cenario['status'] === CenarioStatus::Bloqueado
@@ -22,7 +22,7 @@ final class TesteAggregateCalculator
         $total = $efetivos->count();
 
         if ($total === 0) {
-            return new TesteAggregateResult(TesteStatus::Passou, 100.0);
+            return new TesteAggregateResult($statusAnterior, 100.0);
         }
 
         $terminal = $efetivos->filter(

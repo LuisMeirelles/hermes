@@ -13,22 +13,28 @@ function cenarioPair(CenarioStatus $status, Severidade $severidade = Severidade:
     return ['status' => $status, 'severidade' => $severidade];
 }
 
-test('an empty teste is considered passou at 100%', function () {
+test('an empty teste with no previous status defaults to nao_iniciado at 100%', function () {
     $result = (new TesteAggregateCalculator)->calculate([]);
 
-    expect($result->status)->toBe(TesteStatus::Passou);
+    expect($result->status)->toBe(TesteStatus::NaoIniciado);
     expect($result->percentComplete)->toBe(100.0);
 });
 
-test('a teste where every cenario is bloqueado with a non-bloqueante severidade is considered passou at 100%', function () {
+test('a teste where every cenario is bloqueado with a non-bloqueante severidade keeps the previous teste status at 100%', function (TesteStatus $statusAnterior) {
     $result = (new TesteAggregateCalculator)->calculate([
         cenarioPair(CenarioStatus::Bloqueado, Severidade::Maior),
         cenarioPair(CenarioStatus::Bloqueado, Severidade::Menor),
-    ]);
+    ], $statusAnterior);
 
-    expect($result->status)->toBe(TesteStatus::Passou);
+    expect($result->status)->toBe($statusAnterior);
     expect($result->percentComplete)->toBe(100.0);
-});
+})->with([
+    TesteStatus::NaoIniciado,
+    TesteStatus::EmAndamento,
+    TesteStatus::Passou,
+    TesteStatus::Falhou,
+    TesteStatus::Parcial,
+]);
 
 test('a bloqueado cenario with bloqueante/critica severidade counts as a failure', function (Severidade $severidade) {
     $result = (new TesteAggregateCalculator)->calculate([

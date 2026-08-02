@@ -22,15 +22,19 @@ Teste específico).
   `Maior`/`Menor` = não-bloqueante. `Impacto` e `Tags` são campos independentes.
 - **Cálculo agregado do Teste** (recalculado sempre que um Cenário muda):
   cenários com status `bloqueado` são neutros — não contam como falha nem
-  sucesso, e são descontados do denominador do percentual de conclusão.
+  sucesso, e são descontados do denominador do percentual de conclusão — **a
+  menos que a severidade seja `Bloqueante`/`Crítica`, caso em que o cenário
+  `bloqueado` conta como falha efetiva** (mesma regra de severidade que se
+  aplica a `falhou`).
 
   ```
-  efetivos = cenarios - bloqueados
+  efetivos = cenarios - bloqueados_com_severidade_maior_ou_menor
   percent_complete = terminal(efetivos) / total(efetivos) * 100  (ou 100% se não sobrar nenhum efetivo)
   status = passou                        se nenhum falhou entre os efetivos
-         = falhou                        se algum falhou com severidade Bloqueante/Crítica
+         = falhou                        se algum falhou (ou bloqueado Bloqueante/Crítica) com severidade Bloqueante/Crítica
          = parcial                       se algum falhou mas só com severidade Maior/Menor
          = em_andamento/nao_iniciado     se ainda há efetivos não terminados
+         = status_anterior_do_teste      se não sobrar nenhum efetivo (não assume passou)
   ```
 
   Ideia futura (não construir ainda, só não travar o schema): agrupar cenários
