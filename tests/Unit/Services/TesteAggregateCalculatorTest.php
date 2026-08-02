@@ -96,15 +96,49 @@ test('a teste where every cenario passou is passou at 100%', function () {
     expect($result->percentComplete)->toBe(100.0);
 });
 
-test('a failure with only maior/menor severidade among otherwise passed cenarios is parcial', function (Severidade $severidade) {
+test('a minority of maior/menor failures among otherwise passed cenarios is parcial', function (Severidade $severidade) {
     $result = (new TesteAggregateCalculator)->calculate([
         cenarioPair(CenarioStatus::Falhou, $severidade),
+        cenarioPair(CenarioStatus::Passou),
         cenarioPair(CenarioStatus::Passou),
     ]);
 
     expect($result->status)->toBe(TesteStatus::Parcial);
     expect($result->percentComplete)->toBe(100.0);
 })->with([Severidade::Maior, Severidade::Menor]);
+
+test('exactly half of the efetivos failing with maior/menor severidade is still parcial', function () {
+    $result = (new TesteAggregateCalculator)->calculate([
+        cenarioPair(CenarioStatus::Falhou, Severidade::Menor),
+        cenarioPair(CenarioStatus::Passou),
+    ]);
+
+    expect($result->status)->toBe(TesteStatus::Parcial);
+    expect($result->percentComplete)->toBe(100.0);
+});
+
+test('a majority of maior/menor failures among the efetivos is falhou, not parcial', function () {
+    $result = (new TesteAggregateCalculator)->calculate([
+        cenarioPair(CenarioStatus::Falhou, Severidade::Menor),
+        cenarioPair(CenarioStatus::Falhou, Severidade::Maior),
+    ]);
+
+    expect($result->status)->toBe(TesteStatus::Falhou);
+    expect($result->percentComplete)->toBe(100.0);
+});
+
+test('a majority of maior/menor failures is falhou even while other efetivos are still pending', function () {
+    $result = (new TesteAggregateCalculator)->calculate([
+        cenarioPair(CenarioStatus::Falhou, Severidade::Menor),
+        cenarioPair(CenarioStatus::Falhou, Severidade::Maior),
+        cenarioPair(CenarioStatus::Falhou, Severidade::Menor),
+        cenarioPair(CenarioStatus::EmAndamento),
+        cenarioPair(CenarioStatus::AFazer),
+    ]);
+
+    expect($result->status)->toBe(TesteStatus::Falhou);
+    expect($result->percentComplete)->toBe(60.0);
+});
 
 test('a failure with bloqueante/critica severidade is falhou even while other cenarios are still pending', function (Severidade $severidade) {
     $result = (new TesteAggregateCalculator)->calculate([
@@ -130,6 +164,7 @@ test('bloqueado cenarios are excluded from both the failure check and the percen
 test('reopening a terminal cenario back to em_andamento is reflected purely from current state', function () {
     $beforeReopen = (new TesteAggregateCalculator)->calculate([
         cenarioPair(CenarioStatus::Falhou, Severidade::Menor),
+        cenarioPair(CenarioStatus::Passou),
     ]);
 
     expect($beforeReopen->status)->toBe(TesteStatus::Parcial);

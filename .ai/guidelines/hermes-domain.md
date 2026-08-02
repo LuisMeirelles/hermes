@@ -32,10 +32,18 @@ Teste específico).
   percent_complete = terminal(efetivos) / total(efetivos) * 100  (ou 100% se não sobrar nenhum efetivo)
   status = passou                        se nenhum falhou entre os efetivos
          = falhou                        se algum falhou (ou bloqueado Bloqueante/Crítica) com severidade Bloqueante/Crítica
-         = parcial                       se algum falhou mas só com severidade Maior/Menor
+         = falhou                        se só há falhas Maior/Menor, mas elas são maioria (>50%) dos efetivos
+         = parcial                       se só há falhas Maior/Menor e elas são minoria (≤50%) dos efetivos
          = em_andamento/nao_iniciado     se ainda há efetivos não terminados
          = status_anterior_do_teste      se não sobrar nenhum efetivo (não assume passou)
   ```
+
+  `parcial` representa um resultado misto (a maioria passou, só uma minoria falhou
+  em severidade leve) — se a maioria dos cenários efetivos falhou, mesmo que a
+  severidade seja Maior/Menor, o Teste já é `falhou` (uma falha generalizada não é
+  "parcial" só por não ser crítica). Falha com severidade Bloqueante/Crítica
+  sempre força `falhou` na hora (fail-fast), independente de proporção ou de
+  cenários ainda pendentes.
 
   Ideia futura (não construir ainda, só não travar o schema): agrupar cenários
   `Parcial` em um novo Teste, ou criar bug automaticamente — por isso vale manter

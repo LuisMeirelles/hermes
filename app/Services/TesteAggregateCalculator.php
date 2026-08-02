@@ -36,8 +36,14 @@ final class TesteAggregateCalculator
         if ($falhas->isNotEmpty()) {
             $temFalhaBloqueante = $falhas->contains(fn (array $cenario): bool => $cenario['severidade']->isBloqueante());
 
+            if ($temFalhaBloqueante) {
+                return new TesteAggregateResult(TesteStatus::Falhou, $percentComplete);
+            }
+
+            $proporcaoFalhas = $falhas->count() / $total;
+
             return new TesteAggregateResult(
-                $temFalhaBloqueante ? TesteStatus::Falhou : TesteStatus::Parcial,
+                $proporcaoFalhas > 0.5 ? TesteStatus::Falhou : TesteStatus::Parcial,
                 $percentComplete,
             );
         }

@@ -44,7 +44,7 @@ test('reopening a terminal cenario back to em_andamento recalculates the teste a
         'severidade' => Severidade::Menor,
     ]);
 
-    expect($teste->fresh()->status)->toBe(TesteStatus::Parcial);
+    expect($teste->fresh()->status)->toBe(TesteStatus::Falhou);
 
     $this->actingAs(User::factory()->create())
         ->patch(route('testes.cenarios.update', [$teste, $cenario]), ['status' => CenarioStatus::EmAndamento->value])
