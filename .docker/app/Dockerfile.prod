@@ -31,6 +31,7 @@ RUN npm ci && npm run build
 FROM dunglas/frankenphp:php8.5 AS production
 
 RUN apt-get update && apt-get install -y \
+    curl \
     libzip-dev \
     libpq-dev \
     && docker-php-ext-install pgsql pdo_pgsql zip pcntl \
