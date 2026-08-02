@@ -22,4 +22,5 @@ bootstrap/cache/*.php
 .env.*
 !.env.example
 .docker/app/xdebug.ini
+public/hot
 *.log
