@@ -8,7 +8,14 @@ if [ ! -f .env ]; then
     exit 1
 fi
 
-APP_ENV=$(grep -E '^APP_ENV=' .env | cut -d '=' -f2-)
+env_var() {
+    value=$(grep -E "^$1=" .env | cut -d '=' -f2-)
+    value=${value#\"}; value=${value%\"}
+    value=${value#\'}; value=${value%\'}
+    printf '%s' "$value"
+}
+
+APP_ENV=$(env_var APP_ENV)
 
 case "$APP_ENV" in
     production) branch=main ;;
@@ -19,7 +26,7 @@ case "$APP_ENV" in
         ;;
 esac
 
-APP_URL=$(grep -E '^APP_URL=' .env | cut -d '=' -f2-)
+APP_URL=$(env_var APP_URL)
 APP_HOST=$(echo "$APP_URL" | sed -E 's#^[a-zA-Z]+://##; s#[:/].*##')
 
 if [ -z "$APP_HOST" ]; then
