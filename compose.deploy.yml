@@ -1,4 +1,4 @@
-name: hermes-${DEPLOY_ENV}
+name: hermes-${APP_ENV}
 
 services:
   db:
@@ -17,7 +17,7 @@ services:
       retries: 10
 
   app:
-    image: luismeirelles/hermes:${DEPLOY_ENV}
+    image: luismeirelles/hermes:${APP_ENV}
     build:
       context: .
       dockerfile: .docker/app/Dockerfile.prod
@@ -37,18 +37,18 @@ services:
       start_period: 10s
     labels:
       traefik.enable: "true"
-      traefik.http.routers.hermes-${DEPLOY_ENV}.rule: "Host(`${APP_URL}`)"
-      traefik.http.routers.hermes-${DEPLOY_ENV}.entrypoints: "websecure"
-      traefik.http.routers.hermes-${DEPLOY_ENV}.tls.certresolver: "letsencrypt"
-      traefik.http.services.hermes-${DEPLOY_ENV}.loadbalancer.server.port: 80
-      traefik.http.routers.hermes-${DEPLOY_ENV}.middlewares: "SslHeader@file"
-      traefik.http.routers.hermes-${DEPLOY_ENV}.tls: "true"
+      traefik.http.routers.hermes-${APP_ENV}.rule: "Host(`${APP_HOST}`)"
+      traefik.http.routers.hermes-${APP_ENV}.entrypoints: "websecure"
+      traefik.http.routers.hermes-${APP_ENV}.tls.certresolver: "letsencrypt"
+      traefik.http.services.hermes-${APP_ENV}.loadbalancer.server.port: 80
+      traefik.http.routers.hermes-${APP_ENV}.middlewares: "SslHeader@file"
+      traefik.http.routers.hermes-${APP_ENV}.tls: "true"
     networks:
       - default
       - proxy
 
   queue:
-    image: luismeirelles/hermes:${DEPLOY_ENV}
+    image: luismeirelles/hermes:${APP_ENV}
     build:
       context: .
       dockerfile: .docker/app/Dockerfile.prod
@@ -63,7 +63,7 @@ services:
     command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
 
   scheduler:
-    image: luismeirelles/hermes:${DEPLOY_ENV}
+    image: luismeirelles/hermes:${APP_ENV}
     build:
       context: .
       dockerfile: .docker/app/Dockerfile.prod
@@ -78,7 +78,7 @@ services:
     command: php artisan schedule:work
 
   migrate:
-    image: luismeirelles/hermes:${DEPLOY_ENV}
+    image: luismeirelles/hermes:${APP_ENV}
     build:
       context: .
       dockerfile: .docker/app/Dockerfile.prod

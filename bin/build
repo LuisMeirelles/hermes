@@ -3,32 +3,32 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
-DEPLOY_ENV="${1:-}"
+APP_ENV="${1:-}"
 
-if [ -z "$DEPLOY_ENV" ]; then
+if [ -z "$APP_ENV" ]; then
     branch=$(git rev-parse --abbrev-ref HEAD)
     case "$branch" in
-        main) DEPLOY_ENV=prod ;;
-        staging) DEPLOY_ENV=staging ;;
+        main) APP_ENV=production ;;
+        staging) APP_ENV=staging ;;
         *)
-            echo "Cannot infer environment from branch '$branch'. Usage: $0 <staging|prod>" >&2
+            echo "Cannot infer environment from branch '$branch'. Usage: $0 <staging|production>" >&2
             exit 1
             ;;
     esac
 fi
 
-case "$DEPLOY_ENV" in
-    staging|prod) ;;
+case "$APP_ENV" in
+    staging|production) ;;
     *)
-        echo "Invalid environment '$DEPLOY_ENV'. Usage: $0 <staging|prod>" >&2
+        echo "Invalid environment '$APP_ENV'. Usage: $0 <staging|production>" >&2
         exit 1
         ;;
 esac
 
-export DEPLOY_ENV
+export APP_ENV
 
-echo "==> Building luismeirelles/hermes:${DEPLOY_ENV}"
+echo "==> Building luismeirelles/hermes:${APP_ENV}"
 docker compose -f compose.deploy.yml build app
 
-echo "==> Pushing luismeirelles/hermes:${DEPLOY_ENV}"
+echo "==> Pushing luismeirelles/hermes:${APP_ENV}"
 docker compose -f compose.deploy.yml push app

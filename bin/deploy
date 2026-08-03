@@ -8,18 +8,28 @@ if [ ! -f .env ]; then
     exit 1
 fi
 
-DEPLOY_ENV=$(grep -E '^DEPLOY_ENV=' .env | cut -d '=' -f2-)
+APP_ENV=$(grep -E '^APP_ENV=' .env | cut -d '=' -f2-)
 
-case "$DEPLOY_ENV" in
-    prod) branch=main ;;
+case "$APP_ENV" in
+    production) branch=main ;;
     staging) branch=staging ;;
     *)
-        echo "Unknown DEPLOY_ENV='$DEPLOY_ENV' in .env (expected 'staging' or 'prod')." >&2
+        echo "Unknown APP_ENV='$APP_ENV' in .env (expected 'staging' or 'production')." >&2
         exit 1
         ;;
 esac
 
-echo "==> Deploying ${DEPLOY_ENV} (branch ${branch})"
+APP_URL=$(grep -E '^APP_URL=' .env | cut -d '=' -f2-)
+APP_HOST=$(echo "$APP_URL" | sed -E 's#^[a-zA-Z]+://##; s#[:/].*##')
+
+if [ -z "$APP_HOST" ]; then
+    echo "Could not extract a host from APP_URL='$APP_URL' in .env." >&2
+    exit 1
+fi
+
+export APP_HOST
+
+echo "==> Deploying ${APP_ENV} (branch ${branch}) as ${APP_HOST}"
 
 git fetch --depth 1 origin "$branch"
 git reset --hard "origin/$branch"
