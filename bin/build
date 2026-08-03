@@ -1,0 +1,34 @@
+#!/usr/bin/env sh
+set -eu
+
+cd "$(dirname "$0")/.."
+
+DEPLOY_ENV="${1:-}"
+
+if [ -z "$DEPLOY_ENV" ]; then
+    branch=$(git rev-parse --abbrev-ref HEAD)
+    case "$branch" in
+        main) DEPLOY_ENV=prod ;;
+        staging) DEPLOY_ENV=staging ;;
+        *)
+            echo "Cannot infer environment from branch '$branch'. Usage: $0 <staging|prod>" >&2
+            exit 1
+            ;;
+    esac
+fi
+
+case "$DEPLOY_ENV" in
+    staging|prod) ;;
+    *)
+        echo "Invalid environment '$DEPLOY_ENV'. Usage: $0 <staging|prod>" >&2
+        exit 1
+        ;;
+esac
+
+export DEPLOY_ENV
+
+echo "==> Building luismeirelles/hermes:${DEPLOY_ENV}"
+docker compose -f compose.deploy.yml build app
+
+echo "==> Pushing luismeirelles/hermes:${DEPLOY_ENV}"
+docker compose -f compose.deploy.yml push app

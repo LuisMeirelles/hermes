@@ -1,0 +1,28 @@
+#!/usr/bin/env sh
+set -eu
+
+cd "$(dirname "$0")/.."
+
+if [ ! -f .env ]; then
+    echo ".env not found in $(pwd) — run this from the deploy directory for this environment." >&2
+    exit 1
+fi
+
+DEPLOY_ENV=$(grep -E '^DEPLOY_ENV=' .env | cut -d '=' -f2-)
+
+case "$DEPLOY_ENV" in
+    prod) branch=main ;;
+    staging) branch=staging ;;
+    *)
+        echo "Unknown DEPLOY_ENV='$DEPLOY_ENV' in .env (expected 'staging' or 'prod')." >&2
+        exit 1
+        ;;
+esac
+
+echo "==> Deploying ${DEPLOY_ENV} (branch ${branch})"
+
+git fetch --depth 1 origin "$branch"
+git reset --hard "origin/$branch"
+
+docker compose -f compose.deploy.yml pull
+docker compose -f compose.deploy.yml up -d
