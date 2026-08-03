@@ -1,4 +1,4 @@
-name: hermes-staging
+name: hermes-${DEPLOY_ENV}
 
 services:
   db:
@@ -8,8 +8,6 @@ services:
       POSTGRES_DB: ${DB_DATABASE}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "${DB_PORT}:5432"
     volumes:
       - db_data:/var/lib/postgresql
     healthcheck:
@@ -19,7 +17,7 @@ services:
       retries: 10
 
   app:
-    image: luismeirelles/hermes:staging
+    image: luismeirelles/hermes:${DEPLOY_ENV}
     build:
       context: .
       dockerfile: .docker/app/Dockerfile.prod
@@ -39,18 +37,18 @@ services:
       start_period: 10s
     labels:
       traefik.enable: "true"
-      traefik.http.routers.hermes-staging.rule: "Host(`staging.hermes.meirelles.dev`)"
-      traefik.http.routers.hermes-staging.entrypoints: "websecure"
-      traefik.http.routers.hermes-staging.tls.certresolver: "letsencrypt"
-      traefik.http.services.hermes-staging.loadbalancer.server.port: 80
-      traefik.http.routers.hermes-staging.middlewares: "SslHeader@file"
-      traefik.http.routers.hermes-staging.tls: "true"
+      traefik.http.routers.hermes-${DEPLOY_ENV}.rule: "Host(`${APP_HOST}`)"
+      traefik.http.routers.hermes-${DEPLOY_ENV}.entrypoints: "websecure"
+      traefik.http.routers.hermes-${DEPLOY_ENV}.tls.certresolver: "letsencrypt"
+      traefik.http.services.hermes-${DEPLOY_ENV}.loadbalancer.server.port: 80
+      traefik.http.routers.hermes-${DEPLOY_ENV}.middlewares: "SslHeader@file"
+      traefik.http.routers.hermes-${DEPLOY_ENV}.tls: "true"
     networks:
       - default
       - proxy
 
   queue:
-    image: luismeirelles/hermes:staging
+    image: luismeirelles/hermes:${DEPLOY_ENV}
     build:
       context: .
       dockerfile: .docker/app/Dockerfile.prod
@@ -65,7 +63,7 @@ services:
     command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
 
   scheduler:
-    image: luismeirelles/hermes:staging
+    image: luismeirelles/hermes:${DEPLOY_ENV}
     build:
       context: .
       dockerfile: .docker/app/Dockerfile.prod
@@ -80,7 +78,7 @@ services:
     command: php artisan schedule:work
 
   migrate:
-    image: luismeirelles/hermes:staging
+    image: luismeirelles/hermes:${DEPLOY_ENV}
     build:
       context: .
       dockerfile: .docker/app/Dockerfile.prod
